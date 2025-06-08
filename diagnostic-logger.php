@@ -4,6 +4,17 @@
  * Description: Logs request info, SQL, and API calls for each request during a page load, identified via cookie-based diag_page_id.
  */
 
+// Force-enable debugging and query logging, overriding wp-config.php if necessary
+ini_set('display_errors', 0);
+@define('WP_DEBUG', true);
+@define('WP_DEBUG_LOG', true);
+@define('WP_DEBUG_DISPLAY', false);
+@define('SAVEQUERIES', true);
+
+// Just in case constants were defined too early, also force at runtime
+@ini_set('log_errors', 1);
+@ini_set('display_errors', 0);
+
 $client_ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'];
 
 if ($client_ip !== 'YOUR_IP_HERE') {
