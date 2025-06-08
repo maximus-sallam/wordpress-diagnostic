@@ -1,100 +1,128 @@
-# Diagnostic Logger for WordPress
+# Diagnostic Logger
 
-A must-use (MU) plugin for advanced diagnostics of WordPress page loads. It logs SQL queries, HTTP API calls, browser-side network activity, and server-side metrics — all tied together by a unique page request ID.
-
----
-
-## 🚀 Why Use This Plugin?
-
-This tool is built to help you:
-
-- Debug performance issues
-- Trace unexpected API requests
-- Identify heavy or repeated SQL queries
-- Monitor what happens during every WordPress page load
+A powerful WordPress diagnostics plugin that logs detailed information about SQL queries, API calls, and browser-side requests — per page load — using a unique tracking cookie. Built for developers and sysadmins who need granular visibility into request performance.
 
 ---
 
-## 🔍 What It Captures
+## 🔧 Features
 
-- SQL queries (with count and total execution time)
-- WordPress HTTP API requests (`wp_remote_get()`, etc.)
-- JavaScript-initiated `fetch()` and `XMLHttpRequest` calls
-- Page execution time (PHP runtime)
-- CPU and memory usage (via `ps`, if supported)
-- Request count per page view (tracked via PHP session)
-- All data grouped by a unique `DIAG_PAGE_ID` cookie
-
----
-
-## 📁 Installation Instructions
-
-1. Copy the plugin file into your WordPress MU plugin directory:
-
-   `wp-content/mu-plugins/diagnostic-logger.php`
-
-2. Open the plugin file and find the line that checks your IP address.
-
-   Replace `'YOUR_IP_HERE'` with your actual IP address to ensure diagnostics only run when you're accessing the site.
-
-3. Ensure the following directory exists and is writable:
-
-   `wp-content/logs/`
-
-   If it doesn't exist, the plugin will attempt to create it automatically.
+- ✅ **SQL Query Logging** (via `SAVEQUERIES`)
+- ✅ **HTTP API Call Tracing** (with timing and response body)
+- ✅ **Browser-side Request Logging** (AJAX + fetch, via admin JS)
+- ✅ **Unique Page Load Tracking** via `DIAG_PAGE_ID` cookie
+- ✅ **Per-request log entries** with PID, memory, and runtime info
+- ✅ **MU-compatible design**
+- ✅ **Admin UI** to enable/disable each debug feature
+- ✅ **Live AJAX log viewer** in admin
+- ✅ **WP-CLI Integration**
+  - Enable/disable individual or all features
+  - View and tail logs via `--lines`
+  - Clear logs individually or with `--all`
 
 ---
 
-## 🧪 How to Confirm It's Working
+## 📦 Installation
 
-After installing:
+1. Copy this plugin folder into `wp-content/plugins/diagnostic-logger/`
+2. Set your IP in the plugin (for security):
+   ```php
+   if ($client_ip !== 'YOUR_IP_HERE') return;
 
-- Visit any page on your site
-- Then check these files inside `wp-content/logs/`:
-  - `test.log` — confirms the plugin loaded
-  - `ip-diagnostic.log` — main log for SQL, API calls, and server metrics
-  - `browser-requests.log` — logs browser-side activity like `fetch()` and AJAX
 
----
+Activate via Plugins > Diagnostic Logger
 
-## ✅ Features Summary
+(Optional) Move into mu-plugins if you want forced loading
 
-| Feature                      | Description                                                             |
-|------------------------------|-------------------------------------------------------------------------|
-| SQL Query Logging            | Tracks all SQL queries with timing and details                          |
-| WordPress API Logging        | Logs all `wp_remote_*()` calls with status and response                 |
-| Browser Network Logging      | Captures `fetch()` and `XMLHttpRequest` data using `sendBeacon()`       |
-| Request Grouping             | Ties everything to a `DIAG_PAGE_ID` cookie per page load                |
-| Request Counting             | Uses PHP sessions to count sequential hits within the same load         |
-| Server Metrics               | Includes CPU usage, memory, and process info                            |
-| Session & Cookie Isolation   | Makes analyzing grouped behavior easy across multiple requests          |
+🧪 How It Works
+Every frontend/admin request by the specified IP is tagged with a DIAG_PAGE_ID
 
----
+SQL queries and API calls are logged in /logs/ip-diagnostic.log
 
-## ⚠️ Important Usage Notes
+JavaScript in the admin footer logs browser fetch/XHR calls to /logs/browser-requests.log
 
-- This plugin forces:
-  - `WP_DEBUG = true`
-  - `WP_DEBUG_LOG = true`
-  - `SAVEQUERIES = true`
+Logs include PID, SQL query time, and API call response bodies
 
-- It is **not intended for long-term or production use**.  
-  Logs will grow quickly and the overhead may impact performance.
+Logs are grouped and counted per-page-load using sessions and cookies
 
----
+⚙️ Admin Panel Usage
+Navigate to Admin > Diagnostic Logger:
 
-## 🧹 When You're Done
+✅ Enable/Disable:
 
-Once you've completed diagnostics:
+SQL Logging
 
-- Delete the plugin from the `mu-plugins/` directory
-- Remove the `wp-content/logs/` directory if no longer needed
+API Call Logging
 
----
+Browser Request Logging
 
-## 📜 License
+📝 View Logs:
 
-This diagnostic plugin is provided as-is for internal use only.  
-No support or warranty is provided.
+Diagnostic Log (ip-diagnostic.log)
 
----
+Browser Log (browser-requests.log)
+
+Refresh with AJAX buttons
+
+🧨 WP-CLI Commands
+The plugin supports full CLI control:
+
+# View Status
+
+wp diagnostic-logger status
+
+# Enable/Disable Logging
+
+wp diagnostic-logger enable sql
+wp diagnostic-logger disable api
+wp diagnostic-logger enable --all
+
+# Clear Logs
+
+wp diagnostic-logger clear diag
+wp diagnostic-logger clear browser
+wp diagnostic-logger clear --all
+
+
+# View Logs
+
+# Show entire diagnostic log
+wp diagnostic-logger view diag
+
+# Tail last 50 lines of browser log
+wp diagnostic-logger view browser --lines=50
+
+📁 Log Files
+
+All logs are saved in:
+
+/wp-content/logs/
+├── ip-diagnostic.log         # SQL and API details
+└── browser-requests.log      # Browser-side fetch/XHR logging
+Make sure this directory is writable by the server.
+
+🔒 Security Notes
+Logs only for the configured IP (YOUR_IP_HERE) — change this before use
+
+Output is not sanitized for browser logs — do not expose log viewer to untrusted users
+
+Long API responses are truncated in logs (1000 chars)
+
+💡 Use Cases
+Debug slow admin pages or AJAX calls
+
+Trace specific requests using DIAG_PAGE_ID
+
+Track and profile custom API calls
+
+View SQL bottlenecks per request
+
+Use WP-CLI to monitor logs on remote or headless servers
+
+✅ Requirements
+WordPress 5.0+
+
+PHP 7.4+
+
+SAVEQUERIES enabled for SQL logging
+
+WP-CLI (for CLI usage)
